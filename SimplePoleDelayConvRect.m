@@ -6,16 +6,24 @@
 
 function [y,J] = SimplePoleDelayConvRect(par,t)
 
-a  = par(1);   % exponent
-t0 = par(2);   % delay
-T  = par(3);   % length of rect
+a  = par(:,1);   % exponent
+t0 = par(:,2);   % delay
+T  = par(:,3);   % length of rect
+
+nT = length(t);
+
+if size(par,1) == 1
+    a  = repmat(par(1),nT,1);
+    t0 = repmat(par(2),nT,1);
+    T  = repmat(par(3),nT,1);
+end
 
 tp = t0 + T;
 
 tt0 = t - t0;
 ttp = t - tp;
-exp_at0 = exp(-a*tt0);
-exp_atp = exp(-a*ttp);
+exp_at0 = exp(-a.*tt0);
+exp_atp = exp(-a.*ttp);
 
 idx01 = t < t0 | t > tp;
 idx02 = t <= tp;
@@ -25,7 +33,7 @@ if a == 0
     y1 = tt0;
     
     % t > T + t0
-    y2 = T*ones(size(tt0));
+    y2 = T;
     
     den = 1;   
 else   
@@ -42,13 +50,13 @@ end
 y1(idx01) = 0;
 y2(idx02) = 0;
 
-y = (y1 + y2)/den;
+y = (y1 + y2)./den;
 
 if nargout > 1
   
     % Der a 
-    J1(:,1) = ((a*tt0 + 1).*exp_at0 - 1)/a^2;    
-    J2(:,1) = ((a*tt0 + 1).*exp_at0 - (a*ttp + 1).*exp_atp)/a^2;
+    J1(:,1) = ((a.*tt0 + 1).*exp_at0 - 1)./a.^2;    
+    J2(:,1) = ((a.*tt0 + 1).*exp_at0 - (a.*ttp + 1).*exp_atp)./a.^2;
     
     % Der t0
     J1(:,2) = -exp_at0;
